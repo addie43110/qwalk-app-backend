@@ -227,6 +227,7 @@ def create_plots2D(states):
         # customizing plot
         plt.title("Current States")
         pixel_plot = plt.imshow(data, cmap='hot')
-        plt.colorbar(pixel_plot)
+        if (counter==0):
+            plt.colorbar(pixel_plot)
         plt.savefig('./images/dist'+str(counter)+'.png')
         counter +=1

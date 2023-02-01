@@ -9,7 +9,11 @@ from matplotlib.figure import Figure
 from helpers import get_response_image
 from quantum_functions import qwalk2D, create_plots2D
 
+from flask_cors import CORS, cross_origin
+
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/time', methods={'GET'})
 def get_current_time():
@@ -33,6 +37,7 @@ def get_graph_test():
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
+@cross_origin()
 @app.route('/api/get_qw_test', methods=['GET'])
 def get_qw_test():
     dim = 2

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from qiskit import IBMQ, Aer, assemble, transpile
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from math import pi,log,ceil
+from math import pi,log,ceil,log2,sqrt
 import matplotlib as mpl
 # import basic plot tools
 from qiskit.visualization import plot_histogram
@@ -139,21 +139,21 @@ def shift3D(n_pos):
     return U_shift
 
 def round_remove_zeroes(np_dict):
-    for a,d in np.ndenumerate(np_dict):
+    for _,d in np.ndenumerate(np_dict):
         for k,v in d.items():
             d[k] = round(v, 5)
     
     new_dict = {}
-    for a,d in np.ndenumerate(np_dict):
+    for _,d in np.ndenumerate(np_dict):
         for k,v in d.items():
             if v:
                 new_dict[k] = v
                 
     return new_dict
 
-def qwalk2D(dim, magnitude, iterations):
+def qwalk(dim, power, iterations):
     n_dir = dim
-    n_pos = magnitude
+    n_pos = power
     qwalk_reg = QuantumRegister(n_dir+n_pos+1)
 
     # allocating qubits
@@ -163,7 +163,7 @@ def qwalk2D(dim, magnitude, iterations):
 
     # lists of indices
     dir_ind = list(range(n_dir))
-    pos_ind = list(range(n_dir+n_pos))[2:]
+    pos_ind = list(range(n_dir+n_pos))[n_dir:]
     anc_ind = n_dir+n_pos
 
     qwalk_circ = QuantumCircuit(qwalk_reg, ClassicalRegister(n_pos))
@@ -200,10 +200,42 @@ def qwalk2D(dim, magnitude, iterations):
         
         '''Uncomment to add target state (Sticky walk) functionality'''
         #qwalk_circ.reset(q_anc)
-
         qwalk_circ.h(q_dir)
 
     return states
+
+def create_plots(dim, num_states, iterations):
+
+    power = int(log2(num_states))
+    states = qwalk(dim, power, iterations)
+
+    len_side = 0
+    shape = ()
+    if (dim == 1):
+        len_side = num_states
+        shape = (1, len_side)
+    elif (dim == 2):
+        len_side = int(sqrt(num_states))
+        shape = (len_side,len_side)
+    else:
+        len_side = int(num_states**(1./3))
+        shape = (len_side, len_side, len_side)
+
+    all_inds = range(dim+power)
+    pos_inds = all_inds[dim+power-1:dim-1:-1]
+    counter = 0
+
+    for state in states:
+        data = np.around(np.array(state.probabilities(pos_inds)), 5)
+        data = np.reshape(data, shape)
+        
+        # customizing plot
+        plt.title("Current States")
+        pixel_plot = plt.imshow(data, cmap='hot')
+        cb = plt.colorbar(pixel_plot)
+        plt.savefig('./images/dist'+str(counter)+'.png')
+        cb.remove()
+        counter +=1
 
 def create_plots2D(states):
     # PLOTTING FOR 8 x 8 GRID
@@ -212,7 +244,6 @@ def create_plots2D(states):
     counter = 0
 
     # states = states[len(states)-1:]
-
     for state in states:
         
         np_dict = round_remove_zeroes(np.array(state.probabilities_dict([7,6,5,4,3,2])))         
@@ -227,7 +258,7 @@ def create_plots2D(states):
         # customizing plot
         plt.title("Current States")
         pixel_plot = plt.imshow(data, cmap='hot')
-        if (counter==0):
-            plt.colorbar(pixel_plot)
+        cb = plt.colorbar(pixel_plot)
         plt.savefig('./images/dist'+str(counter)+'.png')
+        cb.remove()
         counter +=1

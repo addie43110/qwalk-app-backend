@@ -40,12 +40,12 @@ def get_graph_test():
 @cross_origin()
 @app.route('/api/get_qw_test', methods=['GET'])
 def get_qw_test():
-    dim = 1
+    dim = 3
     num_states = 8
     iterations = 2
     create_plots(dim, num_states, iterations)
 
-    return send_file('images/dist1.png', mimetype='image/gif')
+    return send_file('images/dist0.png', mimetype='image/gif')
     #return render_template('untitled1.html', name = 'new_plot', url ='./images/new_plot.png')
 
 @app.route('/api/get_qw_multiple', methods=['POST'])

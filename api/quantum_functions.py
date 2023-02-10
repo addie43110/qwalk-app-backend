@@ -5,6 +5,7 @@ from qiskit import IBMQ, Aer, assemble, transpile
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from math import pi,log,ceil,log2,sqrt
 import matplotlib as mpl
+from matplotlib import cm
 # import basic plot tools
 from qiskit.visualization import plot_histogram
 from qiskit.quantum_info import Statevector
@@ -14,9 +15,11 @@ mpl.use('Agg')
 # QUANTUM HELPERS
 def increment(n_adder):
     qc = QuantumCircuit(n_adder)
-    for i in range(n_adder-2):
-        qc.mcx(list(range(i+1, n_adder)),i)
-    qc.cx(n_adder-1, n_adder-2)
+    if(n_adder>2):
+        for i in range(n_adder-2):
+            qc.mcx(list(range(i+1, n_adder)),i)
+    if(n_adder>1):
+        qc.cx(n_adder-1, n_adder-2)
     qc.x(n_adder-1)
 
     U_inc = qc.to_gate()
@@ -26,9 +29,11 @@ def increment(n_adder):
 def decrement(n_sub):
     qc = QuantumCircuit(n_sub)
     qc.x(n_sub-1)
-    qc.cx(n_sub-1, n_sub-2)
-    for i in range(n_sub-3, -1, -1):
-        qc.mcx(list(range(i+1, n_sub)),i)
+    if(n_sub>1):
+        qc.cx(n_sub-1, n_sub-2)
+    if(n_sub>2):
+        for i in range(n_sub-3, -1, -1):
+            qc.mcx(list(range(i+1, n_sub)),i)
                
     U_dec = qc.to_gate()
     U_dec.name = "U$_{dec}$"
@@ -53,7 +58,7 @@ def shift1D(n_pos):
     U_shift.name = "U$_{shift}$"
     return U_shift
 
-def shift2D(n_pos):
+def shift2D(n_pos, len_side):
     n_dir = 2 
     HALF_N = ceil(n_pos/2)
 
@@ -82,51 +87,54 @@ def shift2D(n_pos):
     U_shift.name = "U$_{shift}$"
     return U_shift
 
-def shift3D(n_pos):
+def shift3D(n_pos,len_side):
     n_dir = 3
-    LEN_ONE_SIDE_OF_CUBE = n_pos
-    HALF_LEN = ceil(LEN_ONE_SIDE_OF_CUBE / 2)
-    
+    THIRD_LEN = int(n_pos/3)
+
+    # if 2x2x2 cube, then 8 positions, each side is length 2, so only need 1 qubit to represent each side
     qr = QuantumRegister(n_dir+n_pos)
     q_dir = qr[:n_dir]
     q_pos = qr[n_dir:]
+    RL_DIM = q_pos[:THIRD_LEN]
+    UD_DIM = q_pos[THIRD_LEN:THIRD_LEN*2]
+    IO_DIM = q_pos[-THIRD_LEN:]
     
     qc = QuantumCircuit(qr)
     
     # if direction is 000 (RIGHT)
     qc.x(q_dir)
-    qc.append(increment(HALF_LEN).control(3), q_dir+q_pos[-HALF_LEN:])
+    qc.append(increment(THIRD_LEN).control(3), q_dir+RL_DIM)
     qc.x(q_dir)
     
     # if direction is 001 (DOWN)
     qc.x(q_dir[0])
     qc.x(q_dir[1])
-    qc.append(increment(HALF_LEN).control(3), q_dir+q_pos[HALF_LEN:-HALF_LEN])
+    qc.append(decrement(THIRD_LEN).control(3), q_dir+UD_DIM)
     qc.x(q_dir[0])
     qc.x(q_dir[1])
     
     # if direction is 010 (LEFT)
     qc.x(q_dir[0])
     qc.x(q_dir[2])
-    qc.append(decrement(HALF_LEN).control(3), q_dir+q_pos[-HALF_LEN:])
+    qc.append(decrement(THIRD_LEN).control(3), q_dir+RL_DIM)
     qc.x(q_dir[0])
     qc.x(q_dir[2])
     
     # if direction is 011 (UP)
     qc.x(q_dir[0])
-    qc.append(decrement(HALF_LEN).control(3), q_dir+q_pos[HALF_LEN:-HALF_LEN])
+    qc.append(increment(THIRD_LEN).control(3), q_dir+UD_DIM)
     qc.x(q_dir[0])
     
     # if direction is 100 (BACK)
     qc.x(q_dir[1])
     qc.x(q_dir[2])
-    qc.append(increment(HALF_LEN).control(3), q_dir+q_pos[:HALF_LEN])
+    qc.append(decrement(THIRD_LEN).control(3), q_dir+IO_DIM)
     qc.x(q_dir[1])
     qc.x(q_dir[2])
     
     # if direction is 101 (FORWARD)
     qc.x(q_dir[1])
-    qc.append(decrement(HALF_LEN).control(3), q_dir+q_pos[:HALF_LEN])
+    qc.append(increment(THIRD_LEN).control(3), q_dir+IO_DIM)
     qc.x(q_dir[1])
     
     # if direction is 110
@@ -151,7 +159,7 @@ def round_remove_zeroes(np_dict):
                 
     return new_dict
 
-def qwalk(dim, power, iterations):
+def qwalk(dim, power, len_side, iterations):
     n_dir = dim
     n_pos = power
     qwalk_reg = QuantumRegister(n_dir+n_pos+1)
@@ -189,9 +197,9 @@ def qwalk(dim, power, iterations):
         if (dim == 1): # if 1D walk, use 1D shift
             qwalk_circ.append(shift1D(n_pos).control(1), [anc_ind]+dir_ind+pos_ind)
         elif (dim == 2): # if 2D walk, use 2D shift
-            qwalk_circ.append(shift2D(n_pos).control(1), [anc_ind]+dir_ind+pos_ind)
+            qwalk_circ.append(shift2D(n_pos,len_side).control(1), [anc_ind]+dir_ind+pos_ind)
         else:
-            qwalk_circ.append(shift3D(n_pos).control(1), [anc_ind]+dir_ind+pos_ind)
+            qwalk_circ.append(shift3D(n_pos,len_side).control(1), [anc_ind]+dir_ind+pos_ind)
 
         # add state to list
         states.append(Statevector.from_instruction(qwalk_circ))
@@ -205,10 +213,7 @@ def qwalk(dim, power, iterations):
     return states
 
 def create_plots(dim, num_states, iterations):
-
     power = int(log2(num_states))
-    states = qwalk(dim, power, iterations)
-
     len_side = 0
     shape = ()
     if (dim == 1):
@@ -221,6 +226,8 @@ def create_plots(dim, num_states, iterations):
         len_side = int(num_states**(1./3))
         shape = (len_side, len_side, len_side)
 
+    states = qwalk(dim, power, len_side, iterations)
+
     all_inds = range(dim+power)
     pos_inds = all_inds[dim+power-1:dim-1:-1]
     counter = 0
@@ -229,12 +236,23 @@ def create_plots(dim, num_states, iterations):
         data = np.around(np.array(state.probabilities(pos_inds)), 5)
         data = np.reshape(data, shape)
         
-        # customizing plot
-        plt.title("Current States")
-        pixel_plot = plt.imshow(data, cmap='hot')
-        cb = plt.colorbar(pixel_plot)
-        plt.savefig('./images/dist'+str(counter)+'.png')
-        cb.remove()
+        if(dim==1 or dim==2):
+            plt.title("Current States")
+            pixel_plot = plt.imshow(data, cmap='hot')
+            cb = plt.colorbar(pixel_plot)
+            plt.savefig('./images/dist'+str(counter)+'.png')
+            cb.remove()
+        else:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            z,x,y = data.nonzero()
+            ax.scatter(x,y,z, zdir='z', c = 'green', marker='s', s=500)
+            ax.set_ylim(bottom=0)
+            ax.set_xlim(left=0)
+            ax.set_zlim(zmin=0)
+            #plt.colorbar()
+            ax.set_title("3D Heatmap")
+            plt.savefig('./images/dist'+str(counter)+'.png')
         counter +=1
 
 def create_plots2D(states):

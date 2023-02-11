@@ -1,14 +1,16 @@
 # importing Qiskit
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from qiskit import IBMQ, Aer, assemble, transpile
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from math import pi,log,ceil,log2,sqrt
 import matplotlib as mpl
-from matplotlib import cm
+from matplotlib import cm, colorbar, colors
 # import basic plot tools
 from qiskit.visualization import plot_histogram
 from qiskit.quantum_info import Statevector
+import sys
 
 mpl.use('Agg')
 
@@ -223,7 +225,7 @@ def create_plots(dim, num_states, iterations):
         len_side = int(sqrt(num_states))
         shape = (len_side,len_side)
     else:
-        len_side = int(num_states**(1./3))
+        len_side = round(num_states**(1./3))
         shape = (len_side, len_side, len_side)
 
     states = qwalk(dim, power, len_side, iterations)
@@ -235,48 +237,78 @@ def create_plots(dim, num_states, iterations):
     for state in states:
         data = np.around(np.array(state.probabilities(pos_inds)), 5)
         data = np.reshape(data, shape)
+        data_list = data.tolist()
         
         if(dim==1 or dim==2):
-            plt.title("Current States")
+            plt.title("Step "+str(counter+1))
             pixel_plot = plt.imshow(data, cmap='hot')
             cb = plt.colorbar(pixel_plot)
             plt.savefig('./images/dist'+str(counter)+'.png')
             cb.remove()
         else:
             fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            z,x,y = data.nonzero()
-            ax.scatter(x,y,z, zdir='z', c = 'green', marker='s', s=500)
-            ax.set_ylim(bottom=0)
-            ax.set_xlim(left=0)
-            ax.set_zlim(zmin=0)
-            #plt.colorbar()
-            ax.set_title("3D Heatmap")
+            ax = fig.add_axes([0.1,0.1,0.7,0.7], projection='3d')
+            ax.set_aspect('equal')
+            z,x,y = np.nonzero(data)
+            norm=plt.Normalize(0,1)
+            cmap = colors.LinearSegmentedColormap.from_list("", ["yellow","red"])
+            plotCubes(ax, x,y,z, data=data, cmap=cmap)
+            ax.set_ylim(bottom=0, top=shape[0])
+            ax.set_xlim(left=0, right=shape[0])
+            ax.set_zlim(zmin=0,zmax=shape[0])
+            ax.set_title("Step "+str(counter+1))
+            ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
+
+            
+            cbar = colorbar.ColorbarBase(ax_cb, cmap=cmap, norm=norm,orientation='vertical')  
+            cbar.set_ticks(np.concatenate((np.unique(data), np.array([1]))), axis=None)
+            # set the colorbar transparent as well
+            cbar.solids.set(alpha=1)  
             plt.savefig('./images/dist'+str(counter)+'.png')
         counter +=1
 
-def create_plots2D(states):
-    # PLOTTING FOR 8 x 8 GRID
-    sum_data = np.zeros((8,8))
-    meta_states = []
-    counter = 0
+def cuboid_data(center, size=(1,1,1)):
+    # made by https://stackoverflow.com/questions/30715083/python-plotting-a-wireframe-3d-cuboid?noredirect=1&lq=1
+    """
+    Create a data array for cuboid plotting.
+    ============= ================================================
+    Argument      Description
+    ============= ================================================
+    center        center of the cuboid, triple
+    size          size of the cuboid, triple, (x_length,y_width,z_height)
+    :type size: tuple, numpy.array, list
+    :param size: size of the cuboid, triple, (x_length,y_width,z_height)
+    :type center: tuple, numpy.array, list
+    :param center: center of the cuboid, triple, (x,y,z)
+    """
+    # get the (left, outside, bottom) point
+    o = list(center)
+    # get the length, width, and height
+    l, w, h = size
+    x = [[o[0], o[0] + l, o[0] + l, o[0], o[0]],  # x coordinate of points in bottom surface
+         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  # x coordinate of points in upper surface
+         [o[0], o[0] + l, o[0] + l, o[0], o[0]],  # x coordinate of points in outside surface
+         [o[0], o[0] + l, o[0] + l, o[0], o[0]]]  # x coordinate of points in inside surface
+    y = [[o[1], o[1], o[1] + w, o[1] + w, o[1]],  # y coordinate of points in bottom surface
+         [o[1], o[1], o[1] + w, o[1] + w, o[1]],  # y coordinate of points in upper surface
+         [o[1], o[1], o[1], o[1], o[1]],          # y coordinate of points in outside surface
+         [o[1] + w, o[1] + w, o[1] + w, o[1] + w, o[1] + w]]    # y coordinate of points in inside surface
+    z = [[o[2], o[2], o[2], o[2], o[2]],                        # z coordinate of points in bottom surface
+         [o[2] + h, o[2] + h, o[2] + h, o[2] + h, o[2] + h],    # z coordinate of points in upper surface
+         [o[2], o[2], o[2] + h, o[2] + h, o[2]],                # z coordinate of points in outside surface
+         [o[2], o[2], o[2] + h, o[2] + h, o[2]]]                # z coordinate of points in inside surface
+    return x, y, z
 
-    # states = states[len(states)-1:]
-    for state in states:
-        
-        np_dict = round_remove_zeroes(np.array(state.probabilities_dict([7,6,5,4,3,2])))         
-        #print("Position qubits:",np_dict)
-        
-        data = np.around(np.array(state.probabilities([7,6,5,4,3,2])), 5)
-        data = np.reshape(data, (8,8))
-        sum_data = sum_data + data
-        meta_states.append(sum_data)
-        d = state.probabilities_dict([7,6,5,4,3,2])
-        
-        # customizing plot
-        plt.title("Current States")
-        pixel_plot = plt.imshow(data, cmap='hot')
-        cb = plt.colorbar(pixel_plot)
-        plt.savefig('./images/dist'+str(counter)+'.png')
-        cb.remove()
-        counter +=1
+
+def plotCubeAt(pos=(0,0,0), c="b", alpha=0.1, ax=None):
+    # taken from https://stackoverflow.com/questions/40853556/3d-discrete-heatmap-in-matplotlib
+    # Plotting N cube elements at position pos
+    if ax !=None:
+        X, Y, Z = cuboid_data( (pos[0],pos[1],pos[2]) )
+        ax.plot_surface(np.array(X), np.array(Y), np.array(Z), color=c, rstride=1, cstride=1, alpha=alpha)
+
+def plotCubes(ax, x,y,z, data, cmap):
+    norm = colors.Normalize(0, 1)
+    color_fun = lambda i,j,k : cm.ScalarMappable(norm=norm,cmap = cmap).to_rgba(data[i,j,k])
+    for xi,yi,zi in zip(x,y,z):
+        plotCubeAt(pos=(xi,yi,zi), c=color_fun(xi,yi,zi), alpha=0.9, ax=ax)

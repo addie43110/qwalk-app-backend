@@ -55,10 +55,10 @@ def get_qw_multiple():
     data = json.loads(request.data)
     
     dim = data['dimensions']
-    magnitude = data['num_states']
+    num_states = data['num_states']
     iterations = data['iterations']
 
-    create_plots(dim, magnitude, iterations)
+    create_plots(dim, num_states, iterations)
 
     encoded_imgs = {}
     for i in range(iterations+1):

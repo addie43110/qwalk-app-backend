@@ -1,6 +1,8 @@
 import time
 from flask import Flask, request, render_template, send_file, jsonify, Response
 import io
+import json
+import sys
 
 import random
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -50,7 +52,7 @@ def get_qw_test():
 
 @app.route('/api/get_qw_multiple', methods=['POST'])
 def get_qw_multiple():
-    data = request.get_json()
+    data = json.loads(request.data)
     
     dim = data['dimensions']
     magnitude = data['num_states']

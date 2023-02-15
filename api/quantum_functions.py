@@ -216,7 +216,7 @@ def qwalk(dim, power, len_side, iterations):
 
 def create_plots(dim, num_states, iterations):
     # delete open figure windows; IMPORTANT!
-    plt.close('all')
+    # plt.close('all')
 
     power = int(log2(num_states))
     len_side = 0
@@ -243,11 +243,15 @@ def create_plots(dim, num_states, iterations):
         data_list = data.tolist()
         
         if(dim==1 or dim==2):
-            plt.title("Step "+str(counter+1))
-            pixel_plot = plt.imshow(data, cmap='hot')
-            cb = plt.colorbar(pixel_plot)
+            fig = plt.figure()
+            ax = fig.add_axes([0.1,0.1,0.7,0.7])
+            ax.imshow(data, cmap='hot')
+            ax.set_title("Step "+str(counter+1))
+            ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
+            norm = plt.Normalize(vmin=data.min(), vmax=data.max())
+            cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')
+            cbar.set_ticks(np.unique(data), axis=None)
             plt.savefig('./images/dist'+str(counter)+'.png')
-            cb.remove()
         else:
             fig = plt.figure()
             ax = fig.add_axes([0.1,0.1,0.7,0.7], projection='3d')
@@ -261,7 +265,6 @@ def create_plots(dim, num_states, iterations):
             ax.set_zlim(zmin=0,zmax=shape[0])
             ax.set_title("Step "+str(counter+1))
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
-
             
             cbar = colorbar.ColorbarBase(ax_cb, cmap=cmap, norm=norm,orientation='vertical')  
             cbar.set_ticks(np.concatenate((np.unique(data), np.array([1]))), axis=None)

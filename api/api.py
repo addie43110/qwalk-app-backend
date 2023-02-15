@@ -1,13 +1,15 @@
 import time
 from flask import Flask, request, render_template, send_file, jsonify, Response
 import io
+import json
+import sys
 
 import random
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from helpers import get_response_image
-from quantum_functions import qwalk2D, create_plots2D
+from quantum_functions import qwalk, create_plots
 
 from flask_cors import CORS, cross_origin
 
@@ -40,23 +42,23 @@ def get_graph_test():
 @cross_origin()
 @app.route('/api/get_qw_test', methods=['GET'])
 def get_qw_test():
-    dim = 2
-    magnitude = 6
+    dim = 3
+    num_states = 64
     iterations = 2
-    create_plots2D(qwalk2D(dim, magnitude, iterations))
+    create_plots(dim, num_states, iterations)
 
     return send_file('images/dist1.png', mimetype='image/gif')
     #return render_template('untitled1.html', name = 'new_plot', url ='./images/new_plot.png')
 
 @app.route('/api/get_qw_multiple', methods=['POST'])
 def get_qw_multiple():
-    data = request.get_json()
+    data = json.loads(request.data)
     
     dim = data['dimensions']
-    magnitude = data['magnitude']
+    magnitude = data['num_states']
     iterations = data['iterations']
 
-    create_plots2D(qwalk2D(dim, magnitude, iterations))
+    create_plots(dim, magnitude, iterations)
 
     encoded_imgs = {}
     for i in range(iterations+1):

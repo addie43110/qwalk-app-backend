@@ -215,9 +215,6 @@ def qwalk(dim, power, len_side, iterations):
     return states
 
 def create_plots(dim, num_states, iterations):
-    # delete open figure windows; IMPORTANT!
-    # plt.close('all')
-
     power = int(log2(num_states))
     len_side = 0
     shape = ()
@@ -244,10 +241,10 @@ def create_plots(dim, num_states, iterations):
         
         if(dim==1 or dim==2):
             fig = plt.figure()
-            ax = fig.add_axes([0.1,0.1,0.7,0.7])
+            ax = fig.add_axes([0.1,0.1,0.7,0.7]) if dim==2 else fig.add_axes([0.1,0.1,0.7,0.6])
             ax.imshow(data, cmap='hot')
             ax.set_title("Step "+str(counter+1))
-            ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
+            ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45]) if dim==2 else fig.add_axes([0.9, 0.3, 0.05, 0.45])
             norm = plt.Normalize(vmin=data.min(), vmax=data.max())
             cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')
             cbar.set_ticks(np.unique(data), axis=None)
@@ -257,17 +254,18 @@ def create_plots(dim, num_states, iterations):
             ax = fig.add_axes([0.1,0.1,0.7,0.7], projection='3d')
             ax.set_aspect('equal')
             z,x,y = np.nonzero(data)
-            norm=plt.Normalize(0,1)
+            norm=plt.Normalize(vmin=data.min(),vmax=data.max())
             cmap = colors.LinearSegmentedColormap.from_list("", ["yellow","red"])
             plotCubes(ax, x,y,z, data=data, cmap=cmap)
             ax.set_ylim(bottom=0, top=shape[0])
             ax.set_xlim(left=0, right=shape[0])
             ax.set_zlim(zmin=0,zmax=shape[0])
+            plt.gca().invert_yaxis();
             ax.set_title("Step "+str(counter+1))
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
             
             cbar = colorbar.ColorbarBase(ax_cb, cmap=cmap, norm=norm,orientation='vertical')  
-            cbar.set_ticks(np.concatenate((np.unique(data), np.array([1]))), axis=None)
+            cbar.set_ticks(np.unique(data), axis=None)
             # set the colorbar transparent as well
             cbar.solids.set(alpha=1)  
             plt.savefig('./images/dist'+str(counter)+'.png')
@@ -317,4 +315,4 @@ def plotCubes(ax, x,y,z, data, cmap):
     norm = colors.Normalize(0, 1)
     color_fun = lambda i,j,k : cm.ScalarMappable(norm=norm,cmap = cmap).to_rgba(data[i,j,k])
     for xi,yi,zi in zip(x,y,z):
-        plotCubeAt(pos=(xi,yi,zi), c=color_fun(xi,yi,zi), alpha=0.9, ax=ax)
+        plotCubeAt(pos=(xi,yi,zi), c=color_fun(xi,yi,zi), alpha=0.6, ax=ax)

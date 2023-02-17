@@ -2,7 +2,7 @@ import time
 from flask import Flask, request, render_template, send_file, jsonify, Response
 import io
 import json
-import sys
+import sys, os, glob
 
 import random
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -52,6 +52,9 @@ def get_qw_test():
 
 @app.route('/api/get_qw_multiple', methods=['POST'])
 def get_qw_multiple():
+    for f in glob.glob("./images/*.png"):
+        os.remove(f)
+
     data = json.loads(request.data)
     
     dim = data['dimensions']

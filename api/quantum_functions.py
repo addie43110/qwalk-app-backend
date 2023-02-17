@@ -211,6 +211,9 @@ def qwalk(dim, power, len_side, iterations):
     return states
 
 def create_plots(dim, num_states, iterations):
+    # close all figures ! IMPORTANT ! DO NOT COMMENT OUT OR DELETE! 
+    plt.close('all')
+
     power = int(log2(num_states))
     len_side = 0
     shape = ()

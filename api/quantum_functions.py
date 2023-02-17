@@ -1,16 +1,12 @@
 # importing Qiskit
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-from qiskit import IBMQ, Aer, assemble, transpile
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from math import pi,log,ceil,log2,sqrt
+from math import ceil,log2,sqrt
 import matplotlib as mpl
 from matplotlib import cm, colorbar, colors
 # import basic plot tools
-from qiskit.visualization import plot_histogram
 from qiskit.quantum_info import Statevector
-import sys
 
 mpl.use('Agg')
 

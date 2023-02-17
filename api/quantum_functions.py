@@ -244,10 +244,10 @@ def create_plots(dim, num_states, iterations):
         
         if(dim==1 or dim==2):
             fig = plt.figure()
-            ax = fig.add_axes([0.1,0.1,0.7,0.7])
+            ax = fig.add_axes([0.1,0.1,0.7,0.7]) if dim==2 else fig.add_axes([0.1,0.1,0.7,0.6])
             ax.imshow(data, cmap='hot')
             ax.set_title("Step "+str(counter+1))
-            ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
+            ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45]) if dim==2 else fig.add_axes([0.9, 0.3, 0.05, 0.45])
             norm = plt.Normalize(vmin=data.min(), vmax=data.max())
             cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')
             cbar.set_ticks(np.unique(data), axis=None)

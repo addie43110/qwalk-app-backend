@@ -13,6 +13,8 @@ The user is able to specify the size of the structure and number of steps taken.
 
 Quantum walks plots are created using Qiskit and MatPlotLib in Python. The probabilities for the walks are found using the `Statevector` object which calculates each state's probabilties through evolution from instructions. You can read more here: [https://qiskit.org/documentation/stable/0.24/stubs/qiskit.quantum_info.Statevector.html](https://qiskit.org/documentation/stable/0.24/stubs/qiskit.quantum_info.Statevector.html).
 
+The backend itself is written using Flask.
+
 
 ## Frontend
 

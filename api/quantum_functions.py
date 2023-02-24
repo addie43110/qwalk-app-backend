@@ -135,10 +135,13 @@ def shift3D(n_pos,len_side):
     qc.append(increment(THIRD_LEN).control(3), q_dir+IO_DIM)
     qc.x(q_dir[1])
     
-    # if direction is 110
+    # if direction is 110 (RIGHT)
+    qc.x(q_dir[2])
+    qc.append(increment(THIRD_LEN).control(3), q_dir+RL_DIM)
+    qc.x(q_dir[2])
     
-    # if direction is 111
-    
+    # if direction is 111 (LEFT)
+    qc.append(decrement(THIRD_LEN).control(3), q_dir+RL_DIM)
     
     U_shift = qc.to_gate()
     U_shift.name = "U$_{shift}$"

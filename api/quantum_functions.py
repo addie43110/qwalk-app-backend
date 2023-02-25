@@ -245,7 +245,7 @@ def create_plots(dim, num_states, iterations):
             fig = plt.figure()
             ax = fig.add_axes([0.1,0.1,0.7,0.7]) if dim==2 else fig.add_axes([0.1,0.1,0.7,0.6])
             ax.imshow(data, cmap='hot')
-            ax.set_title("Step "+str(counter+1))
+            ax.set_title("Step "+str(counter))
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45]) if dim==2 else fig.add_axes([0.9, 0.3, 0.05, 0.45])
             norm = plt.Normalize(vmin=data.min(), vmax=data.max())
             cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')
@@ -263,7 +263,7 @@ def create_plots(dim, num_states, iterations):
             ax.set_xlim(left=0, right=shape[0])
             ax.set_zlim(zmin=0,zmax=shape[0])
             plt.gca().invert_yaxis();
-            ax.set_title("Step "+str(counter+1))
+            ax.set_title("Step "+str(counter))
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
             
             cbar = colorbar.ColorbarBase(ax_cb, cmap=cmap, norm=norm,orientation='vertical')  

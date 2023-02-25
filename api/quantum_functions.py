@@ -249,7 +249,7 @@ def create_plots(dim, num_states, iterations):
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45]) if dim==2 else fig.add_axes([0.9, 0.3, 0.05, 0.45])
             norm = plt.Normalize(vmin=data.min(), vmax=data.max())
             cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')
-            cbar.set_ticks(np.unique(data), axis=None)
+            cbar.set_ticks(np.unique(data))
             plt.savefig('./images/dist'+str(counter)+'.png')
         else:
             fig = plt.figure()
@@ -267,7 +267,7 @@ def create_plots(dim, num_states, iterations):
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45])
             
             cbar = colorbar.ColorbarBase(ax_cb, cmap=cmap, norm=norm,orientation='vertical')  
-            cbar.set_ticks(np.unique(data), axis=None)
+            cbar.set_ticks(np.unique(data))
             # set the colorbar transparent as well
             cbar.solids.set(alpha=1)  
             plt.savefig('./images/dist'+str(counter)+'.png')

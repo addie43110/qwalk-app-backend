@@ -9,6 +9,19 @@ The Quantum Walks Visualization Application is a web-application written in Reac
 
 The user is able to specify the size of the structure and number of steps taken. Visualizations are then created using quantum simulators.
 
+## Required imports
+
+You will need to download flask: `pip install flask`. It is recommended that you do this inside of a virtual environment, see: [https://flask.palletsprojects.com/en/2.2.x/installation/](https://flask.palletsprojects.com/en/2.2.x/installation/).
+
+In the same virtual environment, you will need to install Qiskit.
+
+```py
+pip install qiskit
+pip install qiskit[visualization] # use 'qiskit[visualization]' if on a mac
+```
+
+Lastly, you will also need Flask CORS: `pip install flask-cors`.
+
 ## Backend
 
 Quantum walks plots are created using Qiskit and MatPlotLib in Python. The probabilities for the walks are found using the `Statevector` object which calculates each state's probabilties through evolution from instructions. You can read more here: [https://qiskit.org/documentation/stable/0.24/stubs/qiskit.quantum_info.Statevector.html](https://qiskit.org/documentation/stable/0.24/stubs/qiskit.quantum_info.Statevector.html).

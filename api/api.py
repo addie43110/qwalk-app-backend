@@ -30,5 +30,10 @@ def get_qw_multiple():
         encoded_imgs[str(i)] = get_response_image('./images/dist'+str(i)+'.png')
     return jsonify(encoded_imgs)
 
+@cross_origin
+@app.route('/api/is_server_running', methods=['GET'])
+def is_server_running():
+    return 'Quantum walks server is running.'
+
 if __name__ == "__main__":
     app.run(port=8000, debug=True)

@@ -1,5 +1,6 @@
 # importing Qiskit
 import matplotlib.pyplot as plt
+import matplotlib.ticker as tkr
 import numpy as np
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from math import ceil,log2,sqrt
@@ -237,9 +238,10 @@ def create_plots(dim, num_states, iterations):
     counter = 0
 
     for state in states:
-        data = np.around(np.array(state.probabilities(pos_inds)), 5)
+        data = np.around(np.array(state.probabilities(pos_inds)), decimals=5)
         data = np.reshape(data, shape)
         data_list = data.tolist()
+        
         
         if(dim==1 or dim==2):
             fig = plt.figure()
@@ -247,10 +249,10 @@ def create_plots(dim, num_states, iterations):
             ax.imshow(data, cmap='hot')
             ax.set_title("Step "+str(counter))
             ax_cb = fig.add_axes([0.8, 0.3, 0.05, 0.45]) if dim==2 else fig.add_axes([0.9, 0.3, 0.05, 0.45])
-            norm = plt.Normalize(vmin=data.min(), vmax=data.max())
-            cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')
+            norm = plt.Normalize(vmin=0, vmax=data.max())
+            cbar = colorbar.ColorbarBase(ax_cb, cmap='hot', norm=norm, orientation='vertical')       
             cbar.set_ticks(np.unique(data))
-            plt.savefig('./images/dist'+str(counter)+'.png')
+            plt.savefig('./images/dist'+str(counter)+'.png',bbox_inches="tight")
         else:
             fig = plt.figure()
             ax = fig.add_axes([0.1,0.1,0.7,0.7], projection='3d')
